@@ -41,18 +41,6 @@ jobs:
           zip -r9 ../mutool-layer.zip .
           cd ..
 
-      - name: Workaround for the nodejs20.x runtime
-        run: |
-          dnf -y install nodejs20
-          mv /opt/actions-runner/externals/node20/bin/node /opt/actions-runner/externals/node20/bin/node-bak
-          ln -s /usr/bin/node-20 /opt/actions-runner/externals/node20/bin/node
-
-      - name: Upload the layer to the github artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mutool-layer
-          path: mutool-layer.zip
-
       - name: Login to AWS
         run: |
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
