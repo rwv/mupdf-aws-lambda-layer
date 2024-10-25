@@ -1,0 +1,60 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: amazonlinux:2
+    steps:
+      - name: Install the necessary tools
+        run: |
+          yum update -y
+          yum groupinstall "Development Tools" -y
+          yum install -y tar wget
+
+      - name: Download MuPDF
+        run: |
+          wget https://mupdf.com/downloads/archive/mupdf-1.19.0-source.tar.xz
+          tar -xf mupdf-1.19.0-source.tar.xz
+          cd mupdf-1.19.0-source
+
+      - name: Build MuPDF
+        run: |
+          make build=release
+
+      - name: Create the layer
+        run: |
+          mkdir -p layer/bin
+          cp build/release/mutool layer/bin/
+          cd layer
+          zip -r9 ../mutool-layer.zip .
+          cd ..
+
+      - name: Upload the layer to the github artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutool-layer
+          path: mutool-layer.zip
+
+      - name: Login to AWS
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ secrets.AWS_REGION }}
+
+      - name: Deploy the layer to the artifact registry
+        run: |
+          aws lambda publish-layer-version \
+            --layer-name mutool-layer \
+            --zip-file fileb://mutool-layer.zip \
+            --compatible-runtimes nodejs20.x
+            --region ${{ secrets.AWS_REGION }}
