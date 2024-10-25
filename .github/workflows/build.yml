@@ -19,7 +19,7 @@ jobs:
         run: |
           yum update -y
           yum groupinstall "Development Tools" -y
-          yum install -y tar wget
+          yum install -y tar wget lzip
 
       - name: Build MuPDF
         # https://mupdf.readthedocs.io/en/latest/quick-start-guide.html
