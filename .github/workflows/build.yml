@@ -34,6 +34,9 @@ jobs:
           mkdir -p layer/bin
           cp /usr/local/bin/mutool layer/bin/
           cp /usr/local/bin/muraster layer/bin/
+          mkdir -p layer/lib
+          ldd /usr/local/bin/mutool | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' layer/lib
+          ldd /usr/local/bin/muraster | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' layer/lib
           cd layer
           zip -r9 ../mutool-layer.zip .
           cd ..
