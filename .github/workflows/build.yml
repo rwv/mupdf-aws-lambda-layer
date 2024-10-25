@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  MUPDF_VERSION: 1.24.10
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -24,9 +27,9 @@ jobs:
       - name: Build MuPDF
         # https://mupdf.readthedocs.io/en/latest/quick-start-guide.html
         run: |
-          wget https://mupdf.com/downloads/archive/mupdf-1.24.10-source.tar.gz
-          tar -xzf mupdf-1.24.10-source.tar.gz
-          cd mupdf-1.24.10-source
+          wget https://mupdf.com/downloads/archive/mupdf-${{ env.MUPDF_VERSION }}-source.tar.gz
+          tar -xzf mupdf-${{ env.MUPDF_VERSION }}-source.tar.gz
+          cd mupdf-${{ env.MUPDF_VERSION }}-source
           make HAVE_X11=no HAVE_GLUT=no prefix=/usr/local install
 
       - name: Create the layer
@@ -56,4 +59,4 @@ jobs:
           aws lambda publish-layer-version \
             --layer-name mutool \
             --content S3Bucket=${{ secrets.S3_BUCKET }},S3Key=mutool-layer.zip \
-            --description "MuPDF CLI tools v1.24.10"
+            --description "MuPDF CLI tools v${{ env.MUPDF_VERSION }}"
