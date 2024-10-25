@@ -32,7 +32,7 @@ jobs:
       - name: Create the layer
         run: |
           mkdir -p layer/bin
-          cp build/release/mutool layer/bin/
+          cp /usr/local/bin/* layer/bin/
           cd layer
           zip -r9 ../mutool-layer.zip .
           cd ..
