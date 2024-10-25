@@ -49,11 +49,11 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 cp mutool-layer.zip s3://mutool-layer/mutool-layer.zip
+          aws s3 cp mutool-layer.zip s3://${{ secrets.S3_BUCKET }}/mutool-layer.zip
 
       - name: Deploy the layer to the artifact registry
         run: |
           aws lambda publish-layer-version \
             --layer-name mutool \
-            --content S3Bucket=mutool-layer,S3Key=mutool-layer.zip \
+            --content S3Bucket=${{ secrets.S3_BUCKET }},S3Key=mutool-layer.zip \
             --description "MuPDF CLI tools v1.24.10"
