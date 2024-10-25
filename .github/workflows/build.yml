@@ -19,7 +19,7 @@ jobs:
         run: |
           yum update -y
           yum groupinstall "Development Tools" -y
-          yum install -y tar wget lzip
+          yum install -y tar wget lzip dnf
 
       - name: Build MuPDF
         # https://mupdf.readthedocs.io/en/latest/quick-start-guide.html
@@ -32,10 +32,17 @@ jobs:
       - name: Create the layer
         run: |
           mkdir -p layer/bin
-          cp /usr/local/bin/* layer/bin/
+          cp /usr/local/bin/mutool layer/bin/
+          cp /usr/local/bin/muraster layer/bin/
           cd layer
           zip -r9 ../mutool-layer.zip .
           cd ..
+
+      - name: Workaround for the nodejs20.x runtime
+        run: |
+          sudo dnf -y install nodejs20
+          mv /opt/actions-runner/externals/node20/bin/node /opt/actions-runner/externals/node20/bin/node-bak
+          ln -s /usr/bin/node-20 /opt/actions-runner/externals/node20/bin/node
 
       - name: Upload the layer to the github artifact
         uses: actions/upload-artifact@v4
