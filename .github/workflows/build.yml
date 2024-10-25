@@ -19,14 +19,15 @@ jobs:
         run: |
           yum update -y
           yum groupinstall "Development Tools" -y
-          yum install -y tar wget mesa-libGL-devel
+          yum install -y tar wget
 
       - name: Build MuPDF
+        # https://mupdf.readthedocs.io/en/latest/quick-start-guide.html
         run: |
-          wget https://mupdf.com/downloads/archive/mupdf-1.19.0-source.tar.xz
-          tar -xf mupdf-1.19.0-source.tar.xz
-          cd mupdf-1.19.0-source
-          make build=release
+          wget https://mupdf.com/downloads/archive/mupdf-1.24.10-source.tar.xz
+          tar -xf mupdf-1.24.10-source.tar.xz
+          cd mupdf-1.24.10-source
+          make HAVE_X11=no HAVE_GLUT=no prefix=/usr/local install
 
       - name: Create the layer
         run: |
