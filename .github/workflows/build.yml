@@ -54,7 +54,5 @@ jobs:
       - name: Deploy the layer to the artifact registry
         run: |
           aws lambda publish-layer-version \
-            --layer-name mutool-layer \
-            --content S3Bucket=mutool-layer,S3Key=mutool-layer.zip \
-            --compatible-runtimes nodejs20.x
-            --region ${{ secrets.AWS_REGION }}
+            --layer-name mutool \
+            --content S3Bucket=mutool-layer,S3Key=mutool-layer.zip
