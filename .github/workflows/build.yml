@@ -13,7 +13,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: amazonlinux:2
+    container: amazonlinux:2023
     steps:
       - name: Install the necessary tools
         run: |
