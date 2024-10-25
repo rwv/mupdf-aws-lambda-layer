@@ -24,8 +24,8 @@ jobs:
       - name: Build MuPDF
         # https://mupdf.readthedocs.io/en/latest/quick-start-guide.html
         run: |
-          wget https://mupdf.com/downloads/archive/mupdf-1.24.10-source.tar.lz
-          tar -xv --lzip -f mupdf-1.24.10-source.tar.lz
+          wget https://mupdf.com/downloads/archive/mupdf-1.24.10-source.tar.gz
+          tar -xzf mupdf-1.24.10-source.tar.gz
           cd mupdf-1.24.10-source
           make HAVE_X11=no HAVE_GLUT=no prefix=/usr/local install
 
