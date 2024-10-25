@@ -43,7 +43,7 @@ jobs:
 
       - name: Workaround for the nodejs20.x runtime
         run: |
-          sudo dnf -y install nodejs20
+          dnf -y install nodejs20
           mv /opt/actions-runner/externals/node20/bin/node /opt/actions-runner/externals/node20/bin/node-bak
           ln -s /usr/bin/node-20 /opt/actions-runner/externals/node20/bin/node
 
