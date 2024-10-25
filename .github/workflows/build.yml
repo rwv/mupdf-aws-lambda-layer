@@ -21,14 +21,11 @@ jobs:
           yum groupinstall "Development Tools" -y
           yum install -y tar wget
 
-      - name: Download MuPDF
+      - name: Build MuPDF
         run: |
           wget https://mupdf.com/downloads/archive/mupdf-1.19.0-source.tar.xz
           tar -xf mupdf-1.19.0-source.tar.xz
           cd mupdf-1.19.0-source
-
-      - name: Build MuPDF
-        run: |
           make build=release
 
       - name: Create the layer
