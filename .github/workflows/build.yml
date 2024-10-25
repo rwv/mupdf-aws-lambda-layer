@@ -47,10 +47,14 @@ jobs:
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws configure set region ${{ secrets.AWS_REGION }}
 
+      - name: Upload to S3
+        run: |
+          aws s3 cp mutool-layer.zip s3://mutool-layer/mutool-layer.zip
+
       - name: Deploy the layer to the artifact registry
         run: |
           aws lambda publish-layer-version \
             --layer-name mutool-layer \
-            --zip-file fileb://mutool-layer.zip \
+            --content S3Bucket=mutool-layer,S3Key=mutool-layer.zip \
             --compatible-runtimes nodejs20.x
             --region ${{ secrets.AWS_REGION }}
