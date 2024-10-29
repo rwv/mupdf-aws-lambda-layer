@@ -1,0 +1,67 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  release:
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  MUPDF_VERSION: 1.24.10
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: amazonlinux:2023
+    steps:
+      - name: Install the necessary tools
+        run: |
+          yum update -y
+          yum groupinstall "Development Tools" -y
+          yum install -y tar wget dnf awscli
+
+      - name: Build MuPDF
+        # https://mupdf.readthedocs.io/en/latest/quick-start-guide.html
+        run: |
+          wget https://mupdf.com/downloads/archive/mupdf-${{ env.MUPDF_VERSION }}-source.tar.gz
+          tar -xzf mupdf-${{ env.MUPDF_VERSION }}-source.tar.gz
+          cd mupdf-${{ env.MUPDF_VERSION }}-source
+          make HAVE_X11=no HAVE_GLUT=no prefix=/usr/local install
+
+      - name: Create the layer
+        run: |
+          mkdir -p layer/bin
+          cp /usr/local/bin/mutool layer/bin/
+          cp /usr/local/bin/muraster layer/bin/
+          mkdir -p layer/lib
+          ldd /usr/local/bin/mutool | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' layer/lib
+          ldd /usr/local/bin/muraster | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' layer/lib
+          cd layer
+          zip -r9 ../mupdf-layer.zip .
+          cd ..
+
+      - name: Login to AWS
+        if: github.event_name == 'release'
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ secrets.AWS_REGION }}
+
+      - name: Upload to S3
+        if: github.event_name == 'release'
+        run: |
+          aws s3 cp mupdf-layer.zip s3://${{ secrets.S3_BUCKET }}/mupdf-layer.zip
+
+      - name: Deploy the layer to the artifact registry
+        if: github.event_name == 'release'
+        run: |
+          aws lambda publish-layer-version \
+            --layer-name mupdf \
+            --content S3Bucket=${{ secrets.S3_BUCKET }},S3Key=mupdf-layer.zip \
+            --description "MuPDF CLI tools v${{ env.MUPDF_VERSION }}"
