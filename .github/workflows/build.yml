@@ -75,3 +75,9 @@ jobs:
             --layer-name mupdf \
             --content S3Bucket=${{ secrets.S3_BUCKET }},S3Key=mupdf-layer.zip \
             --description "MuPDF CLI tools v${{ env.MUPDF_VERSION }}"
+
+      - name: Upload to GitHub Releases
+        uses: svenstaro/upload-release-action@v2
+        if: github.event_name == 'release'
+        with:
+          file: mupdf-layer.zip
