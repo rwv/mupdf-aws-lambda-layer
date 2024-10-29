@@ -16,10 +16,15 @@ env:
   MUPDF_VERSION: 1.24.10
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     container: amazonlinux:2023
     steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
       - name: Install the necessary tools
         run: |
           yum update -y
@@ -45,6 +50,12 @@ jobs:
           cd layer
           zip -r9 ../mupdf-layer.zip .
           cd ..
+
+      - name: Upload the layer to GitHub Actions Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mupdf-layer
+          path: mupdf-layer.zip
 
       - name: Login to AWS
         if: github.event_name == 'release'
