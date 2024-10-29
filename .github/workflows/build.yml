@@ -40,33 +40,33 @@ jobs:
 
       - name: Create the mupdf-layer.zip layer
         run: |
-          mkdir -p layer/bin
-          cp /usr/local/bin/mutool layer/bin/
-          cp /usr/local/bin/muraster layer/bin/
-          mkdir -p layer/lib
-          ldd /usr/local/bin/mutool | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' layer/lib
-          ldd /usr/local/bin/muraster | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' layer/lib
-          cd layer
+          mkdir -p mupdf-layer/bin
+          cp /usr/local/bin/mutool mupdf-layer/bin/
+          cp /usr/local/bin/muraster mupdf-layer/bin/
+          mkdir -p mupdf-layer/lib
+          ldd /usr/local/bin/mutool | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' mupdf-layer/lib
+          ldd /usr/local/bin/muraster | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' mupdf-layer/lib
+          cd mupdf-layer
           zip -r9 ../mupdf-layer.zip .
           cd ..
 
       - name: Create the mutool-layer.zip layer
         run: |
-          mkdir -p layer/bin
-          cp /usr/local/bin/mutool layer/bin/
-          mkdir -p layer/lib
-          ldd /usr/local/bin/mutool | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' layer/lib
-          cd layer
+          mkdir -p mutool-layer/bin
+          cp /usr/local/bin/mutool mutool-layer/bin/
+          mkdir -p mutool-layer/lib
+          ldd /usr/local/bin/mutool | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' mutool-layer/lib
+          cd mutool-layer
           zip -r9 ../mutool-layer.zip .
           cd ..
 
       - name: Create the muraster-layer.zip layer
         run: |
-          mkdir -p layer/bin
-          cp /usr/local/bin/muraster layer/bin/
-          mkdir -p layer/lib
-          ldd /usr/local/bin/muraster | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' layer/lib
-          cd layer
+          mkdir -p muraster-layer/bin
+          cp /usr/local/bin/muraster muraster-layer/bin/
+          mkdir -p muraster-layer/lib
+          ldd /usr/local/bin/muraster | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' muraster-layer/lib
+          cd muraster-layer
           zip -r9 ../muraster-layer.zip .
           cd ..
 
