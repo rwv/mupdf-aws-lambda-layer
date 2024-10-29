@@ -38,7 +38,7 @@ jobs:
           cd mupdf-${{ env.MUPDF_VERSION }}-source
           make HAVE_X11=no HAVE_GLUT=no prefix=/usr/local install
 
-      - name: Create the layer
+      - name: Create the mupdf-layer.zip layer
         run: |
           mkdir -p layer/bin
           cp /usr/local/bin/mutool layer/bin/
@@ -50,11 +50,61 @@ jobs:
           zip -r9 ../mupdf-layer.zip .
           cd ..
 
-      - name: Upload the layer to GitHub Actions Artifacts
+      - name: Create the mutool-layer.zip layer
+        run: |
+          mkdir -p layer/bin
+          cp /usr/local/bin/mutool layer/bin/
+          mkdir -p layer/lib
+          ldd /usr/local/bin/mutool | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' layer/lib
+          cd layer
+          zip -r9 ../mutool-layer.zip .
+          cd ..
+
+      - name: Create the muraster-layer.zip layer
+        run: |
+          mkdir -p layer/bin
+          cp /usr/local/bin/muraster layer/bin/
+          mkdir -p layer/lib
+          ldd /usr/local/bin/muraster | grep '=>' | awk '{print $3}' | xargs -I '{}' cp -v '{}' layer/lib
+          cd layer
+          zip -r9 ../muraster-layer.zip .
+          cd ..
+
+      - name: Upload mupdf-layer.zip to GitHub Actions Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: mupdf-layer
+          name: mupdf-layer.zip
           path: mupdf-layer.zip
+
+      - name: Upload mutool-layer.zip to GitHub Actions Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutool-layer.zip
+          path: mutool-layer.zip
+
+      - name: Upload muraster-layer.zip to GitHub Actions Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: muraster-layer.zip
+          path: muraster-layer.zip
+
+      - name: Upload mupdf-layer.zip to GitHub Releases
+        uses: svenstaro/upload-release-action@v2
+        if: github.event_name == 'release'
+        with:
+          file: mupdf-layer.zip
+
+      - name: Upload mutool-layer.zip to GitHub Releases
+        uses: svenstaro/upload-release-action@v2
+        if: github.event_name == 'release'
+        with:
+          file: mutool-layer.zip
+
+      - name: Upload muraster-layer.zip to GitHub Releases
+        uses: svenstaro/upload-release-action@v2
+        if: github.event_name == 'release'
+        with:
+          file: muraster-layer.zip
 
       - name: Login to AWS
         if: github.event_name == 'release'
@@ -67,6 +117,8 @@ jobs:
         if: github.event_name == 'release'
         run: |
           aws s3 cp mupdf-layer.zip s3://${{ secrets.S3_BUCKET }}/mupdf-layer.zip
+          aws s3 cp mutool-layer.zip s3://${{ secrets.S3_BUCKET }}/mutool-layer.zip
+          aws s3 cp muraster-layer.zip s3://${{ secrets.S3_BUCKET }}/muraster-layer.zip
 
       - name: Deploy the layer to the artifact registry
         if: github.event_name == 'release'
@@ -75,9 +127,11 @@ jobs:
             --layer-name mupdf \
             --content S3Bucket=${{ secrets.S3_BUCKET }},S3Key=mupdf-layer.zip \
             --description "MuPDF CLI tools v${{ env.MUPDF_VERSION }}"
-
-      - name: Upload to GitHub Releases
-        uses: svenstaro/upload-release-action@v2
-        if: github.event_name == 'release'
-        with:
-          file: mupdf-layer.zip
+          aws lambda publish-layer-version \
+            --layer-name mutool \
+            --content S3Bucket=${{ secrets.S3_BUCKET }},S3Key=mutool-layer.zip \
+            --description "MuPDF CLI tools (mutool) v${{ env.MUPDF_VERSION }}"
+          aws lambda publish-layer-version \
+            --layer-name muraster \
+            --content S3Bucket=${{ secrets.S3_BUCKET }},S3Key=muraster-layer.zip \
+            --description "MuPDF CLI tools (muraster) v${{ env.MUPDF_VERSION }}"
